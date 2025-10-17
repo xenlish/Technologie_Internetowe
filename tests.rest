@@ -1,0 +1,62 @@
+### List members
+GET http://localhost:5000/api/members
+
+### Create member
+POST http://localhost:5000/api/members
+Content-Type: application/json
+
+{
+  "name": "Eve",
+  "email": "eve@example.com"
+}
+
+### Duplicate email -> 409
+POST http://localhost:5000/api/members
+Content-Type: application/json
+
+{
+  "name": "Eve 2",
+  "email": "eve@example.com"
+}
+
+### List books
+GET http://localhost:5000/api/books
+
+### Create book
+POST http://localhost:5000/api/books
+Content-Type: application/json
+
+{
+  "title": "Python Crash Course",
+  "author": "Eric Matthes",
+  "copies": 1
+}
+
+### Borrow (expect 201)
+POST http://localhost:5000/api/loans/borrow
+Content-Type: application/json
+
+{
+  "member_id": 1,
+  "book_id": 1
+}
+
+### Borrow again same single-copy book -> 409
+POST http://localhost:5000/api/loans/borrow
+Content-Type: application/json
+
+{
+  "member_id": 1,
+  "book_id": 1
+}
+
+### List loans
+GET http://localhost:5000/api/loans
+
+### Return loan
+POST http://localhost:5000/api/loans/return
+Content-Type: application/json
+
+{
+  "loan_id": 1
+}

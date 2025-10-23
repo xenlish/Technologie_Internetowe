@@ -1,7 +1,7 @@
 # 📚 Technologie Internetowe — Laboratoria
 
 Repozytorium zawiera rozwiązania poszczególnych laboratoriów z przedmiotu **Technologie Internetowe**.  
-Każde laboratorium zostało zrealizowane w osobnym folderze z własną implementacją backendu (np. Flask, Express, .NET) i plikiem `README.md` z opisem działania oraz instrukcją uruchomienia.
+Każde laboratorium zostało zrealizowane w osobnym folderze z własną implementacją backendu i plikiem `README.md` z opisem działania oraz instrukcją uruchomienia.
 
 ---
 

@@ -5,7 +5,7 @@ git clone https://github.com/xenlish/Technologie_Internetowe.git
 ```
 Przejdź do folderu Lab01 za pomocą komendy:
 ``` bash
-cd Technologie-Internetowe/Lab01
+cd Lab01
 ```
 
 ##  🧱 2. Aktywacja środowiska

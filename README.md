@@ -8,13 +8,14 @@ Każde laboratorium zostało zrealizowane w osobnym folderze z własną implemen
 ## ⚙️ Wymagania wstępne
 
 - Python 3.10+ (dla wersji Flask)
-- Zainstalowane zależności z pliku `requirements.txt` (jeśli występuje w danym labie)
+- Zainstalowane zależności z pliku `requirements.txt` (jeśli występuje)
 
 ---
 
 ## 🚀 Uruchamianie przykładowego laba
 
-Przejdź do folderu wybranego laboratorium, np.:
+Przejdź do folderu wybranego laboratorium, np.lab01 za pomocą komendy:
 
 ```bash
 cd lab1
+```

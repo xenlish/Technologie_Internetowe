@@ -2,7 +2,9 @@
 ## 🧩 1. Sklonuj repozytorium
 ```bash
 git clone https://github.com/xenlish/Technologie_Internetowe.git
-
+```
+Przejdź do folderu Lab01 za pomocą komendy:
+``` bash
 cd Technologie-Internetowe/Lab01
 ```
 

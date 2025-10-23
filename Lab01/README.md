@@ -1,7 +1,7 @@
 # Lab01
 ## 🧩 1. Sklonuj repozytorium
 ```bash
-git clone https://github.com/xenlish/Technologie-Internetowe.git
+git clone https://github.com/xenlish/Technologie_Internetowe.git
 
 cd Technologie-Internetowe/Lab01
 ```

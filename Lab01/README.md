@@ -11,6 +11,8 @@ cd Technologie-Internetowe/Lab01
 ##  🧱 2. Aktywacja środowiska
 ```bash
 python -m venv .venv
+```
+```Bash
 .venv\Scripts\activate
 ```
 ## 📦 3. Instalcja wymaganych bibliotek

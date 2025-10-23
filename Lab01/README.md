@@ -1,6 +1,7 @@
 # Lab01
 ## 🧩 1. Sklonuj repozytorium
 git clone https://github.com/xenlish/Technologie-Internetowe.git
+
 cd Technologie-Internetowe/Lab01
 
 ##  🧱 2. Aktywacja środowiska

@@ -24,6 +24,4 @@ python db_initiation.py
 python app.py
 ```
 ## 🌐 6. Otwórz aplikację w przeglądarce
-```bash
 W terminalu powinnien wyświetlić się adres serwera, należy kliknąć ctrl + c na adres aby otowrzyć przeglądarkę.
-```

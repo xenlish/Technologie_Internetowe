@@ -9,7 +9,6 @@ Każde laboratorium zostało zrealizowane w osobnym folderze z własną implemen
 
 - Python 3.10+ (dla wersji Flask)
 - Zainstalowane zależności z pliku `requirements.txt` (jeśli występuje w danym labie)
-- SQLite lub inna lokalna baza danych, w zależności od implementacji
 
 ---
 

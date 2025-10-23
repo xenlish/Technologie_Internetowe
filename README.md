@@ -11,6 +11,10 @@ Każde laboratorium zostało zrealizowane w osobnym folderze z własną implemen
 - Zainstalowane zależności z pliku `requirements.txt` (jeśli występuje)
 
 ---
+## 🧩 Klonowanie Repozytorium
+```bash
+git clone https://github.com/xenlish/Technologie_Internetowe.git
+```
 
 ## 🚀 Uruchamianie przykładowego laba
 

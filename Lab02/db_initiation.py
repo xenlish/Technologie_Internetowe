@@ -35,5 +35,26 @@ def init_db():
         );
     """)
 
+    cur.execute("""
+        CREATE TABLE IF NOT EXISTS coupons (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            code TEXT NOT NULL UNIQUE,
+            percent REAL NOT NULL CHECK (percent > 0 AND percent <= 100)
+        );
+    """)
+
+    cur.execute("SELECT COUNT(*) FROM coupons")
+    count = cur.fetchone()[0]
+
+    if count == 0:
+        cur.executemany(
+            "INSERT INTO coupons(code, percent) VALUES (?, ?)",
+            [
+                ("PROMO10", 10),
+                ("PROMO20", 20),
+                ("STUDENT5", 5),
+            ]
+        )
+
     conn.commit()
     conn.close()

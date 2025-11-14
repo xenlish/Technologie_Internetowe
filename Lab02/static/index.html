@@ -30,19 +30,13 @@
             text-align: center;
             margin-top: 0;
             margin-bottom: 24px;
-            color: #059669; /* zielony jak w Lab01 */
+            color: #059669;
             letter-spacing: 0.03em;
         }
 
         h2 {
             margin: 0 0 12px;
             font-size: 1.1rem;
-            color: #111827;
-        }
-
-        h3 {
-            margin: 0 0 8px;
-            font-size: 1rem;
             color: #111827;
         }
 
@@ -60,20 +54,11 @@
             border: 1px solid #e5e7eb;
         }
 
-        .card + .card {
-            margin-top: 16px;
-        }
-
         .card-header {
             margin-bottom: 12px;
             display: flex;
             justify-content: space-between;
             align-items: center;
-        }
-
-        .card-header h2,
-        .card-header h3 {
-            margin: 0;
         }
 
         .form-row {
@@ -143,15 +128,6 @@
             background: #b91c1c;
         }
 
-        .btn-warning {
-            background: #facc15;
-            color: #92400e;
-        }
-
-        .btn-warning:hover {
-            background: #eab308;
-        }
-
         .btn-sm {
             padding: 4px 8px;
             font-size: 0.8rem;
@@ -209,7 +185,7 @@
 
         .status-msg {
             font-size: 0.85rem;
-            margin-bottom: 6px;
+            margin-top: 6px;
         }
 
         .status-msg.error {
@@ -232,12 +208,12 @@
     <h1>Sklep internetowy</h1>
 
     <div class="grid-two">
+        <!-- LEWA: produkty -->
         <div>
-            
             <div class="card">
                 <div class="card-header">
                     <h2>Dodaj produkt</h2>
-                    <span style="font-size:0.8rem;color:#6b7280"></span>
+                    <span style="font-size:0.8rem;color:#6b7280">(do testów)</span>
                 </div>
 
                 <div class="form-row">
@@ -272,13 +248,12 @@
                         <th style="width:90px;text-align:center;">Akcja</th>
                     </tr>
                     </thead>
-                    <tbody>
-                    </tbody>
+                    <tbody></tbody>
                 </table>
             </div>
         </div>
 
-
+        <!-- PRAWA: koszyk + kupon -->
         <div>
             <div class="card">
                 <div class="card-header">
@@ -297,10 +272,18 @@
                         <th style="width:120px;">Akcje</th>
                     </tr>
                     </thead>
-                    <tbody>
-
-                    </tbody>
+                    <tbody></tbody>
                 </table>
+
+                <!-- kupon -->
+                <div style="display:flex; gap:8px; margin-top:10px; align-items:flex-end;">
+                    <div style="flex:1;">
+                        <label for="coupon-code" style="font-size:0.8rem;color:#6b7280;">Kod rabatowy</label>
+                        <input id="coupon-code" type="text" placeholder="Np. PROMO10">
+                    </div>
+                    <button id="apply-coupon-btn" class="btn btn-primary">Zastosuj kupon</button>
+                </div>
+                <div id="coupon-info" class="status-msg"></div>
 
                 <div class="cart-total-row">
                     <div>
@@ -317,9 +300,7 @@
 <script>
     async function fetchJSON(url, options = {}) {
         const res = await fetch(url, {
-            headers: {
-                "Content-Type": "application/json"
-            },
+            headers: { "Content-Type": "application/json" },
             ...options
         });
 
@@ -386,10 +367,13 @@
         const tbody = document.querySelector("#cart-table tbody");
         const totalSpan = document.getElementById("cart-total");
         const msgDiv = document.getElementById("cart-msg");
+        const couponInfo = document.getElementById("coupon-info");
 
         tbody.innerHTML = "";
         msgDiv.textContent = "";
         msgDiv.className = "status-msg";
+        couponInfo.textContent = "";
+        couponInfo.className = "status-msg";
 
         try {
             const cart = await fetchJSON("/api/cart");
@@ -442,7 +426,14 @@
                 tbody.appendChild(tr);
             });
 
-            totalSpan.textContent = cart.total.toFixed(2);
+            // jeśli jest kupon – użyj total_with_discount
+            const total = (cart.total_with_discount ?? cart.total ?? 0);
+            totalSpan.textContent = total.toFixed(2);
+
+            if (cart.coupon) {
+                couponInfo.textContent = `Zastosowano kupon ${cart.coupon.code} (-${cart.coupon.percent}%)`;
+                couponInfo.className = "status-msg success";
+            }
 
         } catch (e) {
             msgDiv.textContent = e.message;
@@ -472,13 +463,39 @@
         }
     });
 
+    document.getElementById("apply-coupon-btn").addEventListener("click", async () => {
+        const codeInput = document.getElementById("coupon-code");
+        const couponInfo = document.getElementById("coupon-info");
+
+        couponInfo.textContent = "";
+        couponInfo.className = "status-msg";
+
+        try {
+            const data = await fetchJSON("/api/cart/apply-coupon", {
+                method: "POST",
+                body: JSON.stringify({ code: codeInput.value })
+            });
+
+            couponInfo.textContent = `Zastosowano kupon ${data.coupon.code} (-${data.coupon.percent}%)`;
+            couponInfo.className = "status-msg success";
+
+            await loadCart();
+        } catch (e) {
+            couponInfo.textContent = e.message;
+            couponInfo.className = "status-msg error";
+        }
+    });
+
     document.getElementById("checkout-btn").addEventListener("click", async () => {
         const msgDiv = document.getElementById("cart-msg");
+
+        msgDiv.textContent = "";
+        msgDiv.className = "status-msg";
 
         try {
             const data = await fetchJSON("/api/checkout", { method: "POST" });
 
-            msgDiv.textContent = `Zamówienie #${data.order_id} przyjęte, suma: ${data.total.toFixed(2)} zł`;
+            msgDiv.textContent = `Zamówienie #${data.order_id} przyjęte, suma do zapłaty: ${data.total.toFixed(2)} zł`;
             msgDiv.className = "status-msg success";
 
             await loadCart();

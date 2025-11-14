@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <title>Sklep – Koszyk</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            gap: 2rem;
+            padding: 1rem;
+        }
+        .column {
+            flex: 1;
+        }
+        table {
+            border-collapse: collapse;
+            width: 100%;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 0.5rem;
+        }
+        th {
+            background: #f0f0f0;
+        }
+        .cart-total {
+            font-weight: bold;
+            margin-top: 0.5rem;
+        }
+        .error {
+            color: darkred;
+            margin-bottom: 0.5rem;
+        }
+        .success {
+            color: darkgreen;
+            margin-bottom: 0.5rem;
+        }
+    </style>
+</head>
+
+<body>
+<div class="column">
+    <h2>Produkty</h2>
+
+    <div id="product-form">
+        <h4>Dodaj produkt (do testów)</h4>
+        <input id="new-name" placeholder="Nazwa">
+        <input id="new-price" placeholder="Cena" type="number" step="0.01" min="0">
+        <button id="add-product-btn">Dodaj produkt</button>
+    </div>
+
+    <div id="products-error" class="error"></div>
+
+    <table id="products-table">
+        <thead>
+        <tr>
+            <th>ID</th><th>Nazwa</th><th>Cena</th><th>Ilość</th><th></th>
+        </tr>
+        </thead>
+        <tbody></tbody>
+    </table>
+</div>
+
+<div class="column">
+    <h2>Koszyk</h2>
+    <div id="cart-msg"></div>
+
+    <table id="cart-table">
+        <thead>
+        <tr>
+            <th>Nazwa</th><th>Cena szt.</th><th>Ilość</th><th>Suma</th><th></th>
+        </tr>
+        </thead>
+        <tbody></tbody>
+    </table>
+
+    <div class="cart-total">
+        Razem: <span id="cart-total">0.00</span>
+    </div>
+
+    <button id="checkout-btn">Zamów</button>
+</div>
+
+<script>
+    async function fetchJSON(url, options = {}) {
+        const res = await fetch(url, {
+            headers: {
+                "Content-Type": "application/json"
+            },
+            ...options
+        });
+
+        const data = await res.json().catch(() => null);
+
+        if (!res.ok) {
+            throw new Error(data?.error || ("Błąd " + res.status));
+        }
+
+        return data;
+    }
+
+    async function loadProducts() {
+        const tbody = document.querySelector("#products-table tbody");
+        const errDiv = document.getElementById("products-error");
+
+        tbody.innerHTML = "";
+        errDiv.textContent = "";
+
+        try {
+            const products = await fetchJSON("/api/products");
+
+            products.forEach(p => {
+                const tr = document.createElement("tr");
+
+                tr.innerHTML = `
+                    <td>${p.id}</td>
+                    <td>${p.name}</td>
+                    <td>${p.price.toFixed(2)}</td>
+                    <td><input type="number" min="1" value="1" style="width:60px"></td>
+                    <td><button>Dodaj</button></td>
+                `;
+
+                const qtyInput = tr.querySelector("input");
+                const btn = tr.querySelector("button");
+
+                btn.addEventListener("click", async () => {
+                    try {
+                        await fetchJSON("/api/cart/add", {
+                            method: "POST",
+                            body: JSON.stringify({
+                                product_id: p.id,
+                                qty: parseInt(qtyInput.value)
+                            })
+                        });
+                        await loadCart();
+                    } catch (e) {
+                        alert(e.message);
+                    }
+                });
+
+                tbody.appendChild(tr);
+            });
+
+        } catch (e) {
+            errDiv.textContent = e.message;
+        }
+    }
+
+    async function loadCart() {
+        const tbody = document.querySelector("#cart-table tbody");
+        const totalSpan = document.getElementById("cart-total");
+        const msgDiv = document.getElementById("cart-msg");
+
+        tbody.innerHTML = "";
+        msgDiv.textContent = "";
+        msgDiv.className = "";
+
+        try {
+            const cart = await fetchJSON("/api/cart");
+
+            cart.items.forEach(item => {
+                const tr = document.createElement("tr");
+
+                tr.innerHTML = `
+                    <td>${item.name}</td>
+                    <td>${item.unit_price.toFixed(2)}</td>
+                    <td><input type="number" min="1" value="${item.qty}" style="width:60px"></td>
+                    <td>${item.line_total.toFixed(2)}</td>
+                    <td>
+                        <button class="update-btn">Zmień</button>
+                        <button class="delete-btn">Usuń</button>
+                    </td>
+                `;
+
+                const qtyInput = tr.querySelector("input");
+                const updateBtn = tr.querySelector(".update-btn");
+                const deleteBtn = tr.querySelector(".delete-btn");
+
+                updateBtn.addEventListener("click", async () => {
+                    try {
+                        await fetchJSON("/api/cart/item", {
+                            method: "PATCH",
+                            body: JSON.stringify({
+                                product_id: item.product_id,
+                                qty: parseInt(qtyInput.value)
+                            })
+                        });
+                        await loadCart();
+                    } catch (e) {
+                        alert(e.message);
+                    }
+                });
+
+                deleteBtn.addEventListener("click", async () => {
+                    try {
+                        await fetchJSON(`/api/cart/item/${item.product_id}`, {
+                            method: "DELETE"
+                        });
+                        await loadCart();
+                    } catch (e) {
+                        alert(e.message);
+                    }
+                });
+
+                tbody.appendChild(tr);
+            });
+
+            totalSpan.textContent = cart.total.toFixed(2);
+
+        } catch (e) {
+            msgDiv.textContent = e.message;
+            msgDiv.className = "error";
+        }
+    }
+
+    document.getElementById("add-product-btn").addEventListener("click", async () => {
+        const nameInput = document.getElementById("new-name");
+        const priceInput = document.getElementById("new-price");
+
+        try {
+            await fetchJSON("/api/products", {
+                method: "POST",
+                body: JSON.stringify({
+                    name: nameInput.value,
+                    price: priceInput.value
+                })
+            });
+
+            nameInput.value = "";
+            priceInput.value = "";
+            await loadProducts();
+
+        } catch (e) {
+            alert(e.message);
+        }
+    });
+
+    document.getElementById("checkout-btn").addEventListener("click", async () => {
+        const msgDiv = document.getElementById("cart-msg");
+
+        try {
+            const data = await fetchJSON("/api/checkout", { method: "POST" });
+
+            msgDiv.textContent = `Zamówienie #${data.order_id} przyjęte, suma: ${data.total.toFixed(2)}`;
+            msgDiv.className = "success";
+
+            await loadCart();
+
+        } catch (e) {
+            msgDiv.textContent = e.message;
+            msgDiv.className = "error";
+        }
+    });
+
+    loadProducts();
+    loadCart();
+</script>
+</body>
+</html>

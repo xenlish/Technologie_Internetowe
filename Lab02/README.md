@@ -3,7 +3,7 @@
 ```bash
 git clone https://github.com/xenlish/Technologie_Internetowe.git
 ```
-Przejdź do folderu Lab01 za pomocą komendy:
+Przejdź do folderu Lab02 za pomocą komendy:
 ``` bash
 cd Lab02
 ```

@@ -1,0 +1,4 @@
+flask
+flask-sqlalchemy
+Flask==3.0.3
+

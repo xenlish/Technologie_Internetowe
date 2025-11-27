@@ -1,0 +1,29 @@
+
+GET http://localhost:5000/api/posts
+
+
+POST http://localhost:5000/api/posts
+Content-Type: application/json
+
+{
+  "title": "Nowy post z REST",
+  "body": "Treść testowego posta"
+}
+
+
+GET http://localhost:5000/api/posts/1/comments
+
+
+POST http://localhost:5000/api/posts/1/comments
+Content-Type: application/json
+
+{
+  "author": "RestClient",
+  "body": "Komentarz testowy"
+}
+
+
+GET http://localhost:5000/api/comments/pending
+
+
+POST http://localhost:5000/api/comments/3/approve

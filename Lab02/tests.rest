@@ -1,9 +1,8 @@
 @host = http://127.0.0.1:5000
 
-### GET products
 GET {{host}}/api/products
 
-### Add product A
+
 POST {{host}}/api/products
 Content-Type: application/json
 
@@ -12,7 +11,6 @@ Content-Type: application/json
   "price": 19.99
 }
 
-### Add product B
 POST {{host}}/api/products
 Content-Type: application/json
 
@@ -21,7 +19,6 @@ Content-Type: application/json
   "price": 5.50
 }
 
-### Add to cart
 POST {{host}}/api/cart/add
 Content-Type: application/json
 
@@ -30,11 +27,9 @@ Content-Type: application/json
   "qty": 2
 }
 
-### GET cart
 GET {{host}}/api/cart
 
-### Checkout
+
 POST {{host}}/api/checkout
 
-### GET orders
 GET {{host}}/api/orders

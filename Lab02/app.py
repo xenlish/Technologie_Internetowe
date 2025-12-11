@@ -195,7 +195,7 @@ def cart_delete(pid):
     return cart_get()
 
 @app.route("/api/cart/apply-coupon", methods=["POST"])
-@app.route("/api/cart/apply-coupon/", methods=["POST"])  # <- ratuje przed 405
+@app.route("/api/cart/apply-coupon/", methods=["POST"])
 def cart_apply_coupon():
     """
     Body: { "code": "PROMO10" }

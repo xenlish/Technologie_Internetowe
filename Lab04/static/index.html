@@ -1,0 +1,208 @@
+<!doctype html>
+<html lang="pl">
+<head>
+    <meta charset="utf-8">
+    <title>Filmy i oceny</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="page">
+    <h1 class="page-title">Filmy i oceny</h1>
+
+    <div class="grid">
+        <section class="card">
+            <h2>Ranking filmów</h2>
+
+            <div class="filters">
+                <label>
+                    Rok:
+                    <input type="number" id="filter-year" placeholder="Np. 2014">
+                </label>
+                <label>
+                    Limit:
+                    <input type="number" id="filter-limit" placeholder="Np. 5" min="1">
+                </label>
+                <button id="filter-btn">Filtruj</button>
+                <button id="reset-btn">Reset</button>
+            </div>
+
+            <table class="table" id="movies-table">
+                <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Tytuł</th>
+                    <th>Rok</th>
+                    <th>Średnia</th>
+                    <th>Głosów</th>
+                </tr>
+                </thead>
+                <tbody>
+                </tbody>
+            </table>
+            <p id="movies-empty" class="muted" hidden>Brak filmów.</p>
+        </section>
+
+        <section class="card">
+            <h2>Dodaj film</h2>
+            <form id="movie-form" class="form">
+                <label>
+                    Tytuł
+                    <input type="text" id="movie-title" required placeholder="Np. Inception">
+                </label>
+                <label>
+                    Rok
+                    <input type="number" id="movie-year" required placeholder="Np. 2010">
+                </label>
+                <button type="submit">Dodaj film</button>
+            </form>
+
+            <hr>
+
+            <h2>Oceń film</h2>
+            <form id="rating-form" class="form">
+                <label>
+                    Film
+                    <select id="rating-movie" required>
+                    </select>
+                </label>
+                <label>
+                    Ocena (1–5)
+                    <input type="number" id="rating-score" required min="1" max="5" placeholder="Np. 5">
+                </label>
+                <button type="submit">Dodaj ocenę</button>
+            </form>
+
+            <p id="message" class="message" hidden></p>
+        </section>
+    </div>
+</div>
+
+<script>
+    const moviesTableBody = document.querySelector("#movies-table tbody");
+    const moviesEmpty = document.getElementById("movies-empty");
+    const ratingMovieSelect = document.getElementById("rating-movie");
+    const messageBox = document.getElementById("message");
+
+    const filterYear = document.getElementById("filter-year");
+    const filterLimit = document.getElementById("filter-limit");
+    const filterBtn = document.getElementById("filter-btn");
+    const resetBtn = document.getElementById("reset-btn");
+
+    async function fetchMovies(options = {}) {
+        const params = new URLSearchParams();
+        if (options.year) params.append("year", options.year);
+        if (options.limit) params.append("limit", options.limit);
+
+        const url = params.toString() ? `/api/movies?${params}` : "/api/movies";
+        const res = await fetch(url);
+        if (!res.ok) {
+            showMessage("Błąd ładowania filmów", true);
+            return [];
+        }
+        return res.json();
+    }
+
+    function renderMovies(movies) {
+        moviesTableBody.innerHTML = "";
+        ratingMovieSelect.innerHTML = "";
+
+        if (!movies.length) {
+            moviesEmpty.hidden = false;
+            return;
+        }
+        moviesEmpty.hidden = true;
+
+        for (const movie of movies) {
+            const tr = document.createElement("tr");
+            tr.innerHTML = `
+                <td>${movie.id}</td>
+                <td>${movie.title}</td>
+                <td>${movie.year}</td>
+                <td>${Number(movie.avg_score).toFixed(2)}</td>
+                <td>${movie.votes}</td>
+            `;
+            moviesTableBody.appendChild(tr);
+
+            const option = document.createElement("option");
+            option.value = movie.id;
+            option.textContent = `${movie.title} (${movie.year})`;
+            ratingMovieSelect.appendChild(option);
+        }
+    }
+
+    function showMessage(text, isError = false) {
+        messageBox.textContent = text;
+        messageBox.classList.toggle("error", isError);
+        messageBox.hidden = false;
+        setTimeout(() => {
+            messageBox.hidden = true;
+        }, 3000);
+    }
+
+    async function loadMoviesWithFilters() {
+        const year = filterYear.value ? Number(filterYear.value) : undefined;
+        const limit = filterLimit.value ? Number(filterLimit.value) : undefined;
+        const movies = await fetchMovies({year, limit});
+        renderMovies(movies);
+    }
+
+    document.addEventListener("DOMContentLoaded", () => {
+        loadMoviesWithFilters();
+    });
+
+    filterBtn.addEventListener("click", (e) => {
+        e.preventDefault();
+        loadMoviesWithFilters();
+    });
+
+    resetBtn.addEventListener("click", (e) => {
+        e.preventDefault();
+        filterYear.value = "";
+        filterLimit.value = "";
+        loadMoviesWithFilters();
+    });
+
+    document.getElementById("movie-form").addEventListener("submit", async (e) => {
+        e.preventDefault();
+        const title = document.getElementById("movie-title").value.trim();
+        const year = document.getElementById("movie-year").value;
+
+        const res = await fetch("/api/movies", {
+            method: "POST",
+            headers: {"Content-Type": "application/json"},
+            body: JSON.stringify({title, year}),
+        });
+
+        if (res.status === 201) {
+            showMessage("Film dodany.");
+            e.target.reset();
+            await loadMoviesWithFilters();
+        } else {
+            const data = await res.json().catch(() => ({}));
+            showMessage(data.error || "Błąd dodawania filmu", true);
+        }
+    });
+
+    document.getElementById("rating-form").addEventListener("submit", async (e) => {
+        e.preventDefault();
+        const movie_id = ratingMovieSelect.value;
+        const score = document.getElementById("rating-score").value;
+
+        const res = await fetch("/api/ratings", {
+            method: "POST",
+            headers: {"Content-Type": "application/json"},
+            body: JSON.stringify({movie_id, score}),
+        });
+
+        if (res.status === 201) {
+            showMessage("Ocena dodana.");
+            e.target.reset();
+            await loadMoviesWithFilters();
+        } else {
+            const data = await res.json().catch(() => ({}));
+            showMessage(data.error || "Błąd dodawania oceny", true);
+        }
+    });
+</script>
+</body>
+</html>

@@ -1,4 +1,3 @@
-# db_initiation.py
 import sqlite3
 from datetime import datetime
 
@@ -34,7 +33,6 @@ def init_db():
 
     now = datetime.utcnow().isoformat()
 
-    # seed
     c.execute("INSERT INTO posts (title, body, created_at) VALUES (?, ?, ?)",
               ("Dlaczego mój kod działa? (A dlaczego nie działa wtedy, kiedy musi?)", 
                "Jest taki moment w życiu każdego programisty, kiedy pisze kod, uruchamia go… i działa.\n"
